@@ -1,0 +1,26 @@
+export APP_NAME=mlflow-xgb-demo
+export MODEL_PATH=
+export LOCAL_PORT=8888
+export REGION=us-east-1
+export ROLE=
+
+mlflow ui
+
+http://kubernetes.docker.internal:5000	
+
+wget -N https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip
+
+unzip -o bank-additional.zip
+
+mlflow sagemaker run-local -m $MODEL_PATH -p $LOCAL_PORT
+
+mlflow sagemaker build-and-push-container
+
+aws ecr describe-images --repository-name mlflow-pyfunc --region $REGION
+
+mlflow sagemaker deploy -a $APP_NAME -m $MODEL_PATH -e $ROLE --region-name $REGION
+
+aws sagemaker list-endpoints --region $REGION
+
+mlflow sagemaker delete -a $APP_NAME -r $REGION
+
